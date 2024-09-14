@@ -1,14 +1,312 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model doctrine_migration_versions {
+  version        String    @id @db.VarChar(191)
+  executed_at    DateTime? @db.Timestamp(6)
+  execution_time Int?
+}
+
+model v2_agence {
+  id          Int           @id @default(autoincrement())
+  adresse_1   String?       @db.VarChar(255)
+  adresse_2   String?       @db.VarChar(255)
+  cp          String?       @db.VarChar(10)
+  ville       String?       @db.VarChar(255)
+  telephone   String?       @db.VarChar(12)
+  mail        String?       @db.VarChar(255)
+  nom         String        @db.VarChar(255)
+  actif       Int           @default(0) @db.SmallInt
+  v2_employee v2_employee[]
+  v2_vente    v2_vente[]
+}
+
+model v2_client {
+  id        Int        @id @default(autoincrement())
+  nom       String     @db.VarChar(255)
+  prenom    String     @db.VarChar(255)
+  adresse_1 String?    @db.VarChar(255)
+  adresse_2 String?    @db.VarChar(255)
+  cp        String?    @db.VarChar(10)
+  ville     String?    @db.VarChar(255)
+  telephone String?    @db.VarChar(11)
+  mail      String?    @db.VarChar(255)
+  v2_vente  v2_vente[]
+}
+
+model v2_commande_fournisseur {
+  id            Int      @id @default(autoincrement())
+  vente_id      Int?
+  filename      String   @db.VarChar(255)
+  original_name String?  @db.VarChar(255)
+  date_add      DateTime @db.Date
+
+  @@index([vente_id])
+}
+
+model v2_configuration {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(255)
+  value    String   @db.VarChar(255)
+  date_add DateTime @db.Timestamp(6)
+  date_upd DateTime @db.Timestamp(6)
+}
+
+model v2_employee {
+  id                                               Int                  @id @default(autoincrement())
+  fk_agence_id                                     Int
+  fk_fonction_id                                   Int
+  login                                            String               @db.VarChar(255)
+  password                                         String               @db.VarChar(255)
+  nom                                              String               @db.VarChar(255)
+  prenom                                           String               @db.VarChar(255)
+  telephone                                        String               @db.VarChar(11)
+  mail                                             String               @db.VarChar(255)
+  actif                                            Int                  @default(0) @db.SmallInt
+  v2_agence                                        v2_agence            @relation(fields: [fk_agence_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_employee_fonction                             v2_employee_fonction @relation(fields: [fk_fonction_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_vente_v2_vente_fk_metreur_idTov2_employee     v2_vente[]           @relation("v2_vente_fk_metreur_idTov2_employee")
+  v2_vente_v2_vente_fk_prospecteur_idTov2_employee v2_vente[]           @relation("v2_vente_fk_prospecteur_idTov2_employee")
+  v2_vente_v2_vente_fk_vendeur1_idTov2_employee    v2_vente[]           @relation("v2_vente_fk_vendeur1_idTov2_employee")
+  v2_vente_v2_vente_fk_vendeur2_idTov2_employee    v2_vente[]           @relation("v2_vente_fk_vendeur2_idTov2_employee")
+  v2_vente_employee                                v2_vente_employee[]
+
+  @@index([fk_agence_id])
+  @@index([fk_fonction_id])
+}
+
+model v2_employee_fonction {
+  id                       Int           @id @default(autoincrement())
+  nom                      String        @db.VarChar(255)
+  niveau_admin             Int
+  vente_edit               Int           @db.SmallInt
+  vente_create             Int           @db.SmallInt
+  product_edit             Int           @db.SmallInt
+  product_create           Int           @db.SmallInt
+  client_edit              Int           @db.SmallInt
+  client_create            Int           @db.SmallInt
+  employee_edit            Int           @db.SmallInt
+  employee_create          Int           @db.SmallInt
+  agence_create            Int           @db.SmallInt
+  agence_edit              Int           @db.SmallInt
+  employee_fonction_create Int           @db.SmallInt
+  employee_fonction_edit   Int           @db.SmallInt
+  pack_create              Int           @db.SmallInt
+  vente_status_create      Int           @db.SmallInt
+  vente_status_edit        Int           @db.SmallInt
+  pack_edit                Int           @db.SmallInt
+  parameter_create         Int           @db.SmallInt
+  parameter_edit           Int           @db.SmallInt
+  agence_list              Int           @db.SmallInt
+  agence_show              Int           @db.SmallInt
+  client_list              Int           @db.SmallInt
+  client_show              Int           @db.SmallInt
+  parameter_list           Int           @db.SmallInt
+  parameter_show           Int           @db.SmallInt
+  partenaire_create        Int           @db.SmallInt
+  partenaire_edit          Int           @db.SmallInt
+  employee_list            Int           @db.SmallInt
+  employee_show            Int           @db.SmallInt
+  employee_fonction_list   Int           @db.SmallInt
+  employee_fonction_show   Int           @db.SmallInt
+  pack_list                Int           @db.SmallInt
+  pack_show                Int           @db.SmallInt
+  partenaire_list          Int           @db.SmallInt
+  partenaire_show          Int           @db.SmallInt
+  product_list             Int           @db.SmallInt
+  product_show             Int           @db.SmallInt
+  vente_status_list        Int           @db.SmallInt
+  vente_status_show        Int           @db.SmallInt
+  vente_list               Int           @db.SmallInt
+  vente_show               Int           @db.SmallInt
+  v2_employee              v2_employee[]
+}
+
+model v2_installation_photos {
+  id            Int     @id @default(autoincrement())
+  vente_id      Int?
+  filename      String  @db.VarChar(255)
+  original_name String? @db.VarChar(255)
+
+  @@index([vente_id])
+}
+
+model v2_pack_produit {
+  id                      Int                       @id @default(autoincrement())
+  nom                     String                    @db.VarChar(255)
+  v2_pack_produit_produit v2_pack_produit_produit[]
+}
+
+model v2_pack_produit_produit {
+  pack_produit_id Int
+  produit_id      Int
+  v2_pack_produit v2_pack_produit @relation(fields: [pack_produit_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  v2_produit      v2_produit      @relation(fields: [produit_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([pack_produit_id, produit_id])
+  @@index([pack_produit_id])
+  @@index([produit_id])
+}
+
+model v2_partenaire_commercial {
+  id       Int        @id @default(autoincrement())
+  nom      String     @db.VarChar(255)
+  v2_vente v2_vente[]
+}
+
+model v2_produit {
+  id                      Int                       @id @default(autoincrement())
+  nom                     String                    @db.VarChar(255)
+  prix_ht                 Decimal                   @db.Decimal(10, 2)
+  stock                   Int
+  category_id             Int                       @default(0)
+  marge_brut              Decimal?                  @db.Decimal(10, 2)
+  prix_reviens            Decimal?                  @db.Decimal(10, 2)
+  cout_autre              Decimal?                  @db.Decimal(10, 2)
+  cout_pose               Decimal?                  @db.Decimal(10, 2)
+  cout_accessoire         Decimal?                  @db.Decimal(10, 2)
+  cout_materiel           Decimal?                  @db.Decimal(10, 2)
+  v2_pack_produit_produit v2_pack_produit_produit[]
+}
+
+model v2_produit_category {
+  id  Int    @id
+  nom String @db.VarChar(255)
+}
+
+model v2_technique_fiches_visite {
+  id                               Int                                @id @default(autoincrement())
+  filename                         String                             @db.VarChar(255)
+  original_name                    String?                            @db.VarChar(255)
+  v2_technique_fiches_visite_vente v2_technique_fiches_visite_vente[]
+}
+
+model v2_technique_fiches_visite_vente {
+  technique_fiches_visite_id Int
+  vente_id                   Int
+  v2_technique_fiches_visite v2_technique_fiches_visite @relation(fields: [technique_fiches_visite_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "v2_technique_fiches_visite_vent_technique_fiches_visite_id_fkey")
+
+  @@id([technique_fiches_visite_id, vente_id])
+  @@index([technique_fiches_visite_id])
+  @@index([vente_id])
+}
+
+model v2_technique_photos {
+  id       Int    @id @default(autoincrement())
+  vente_id Int
+  filename String @db.VarChar(255)
+
+  @@index([vente_id])
+}
+
+model v2_vente {
+  id                                                  Int                       @id @default(autoincrement())
+  fk_vendeur1_id                                      Int?
+  fk_vendeur2_id                                      Int?
+  fk_prospecteur_id                                   Int?
+  fk_client_id                                        Int
+  fk_etape_id                                         Int?
+  fk_vente_status_id                                  Int?
+  fk_vente_state_id                                   Int
+  fk_agence_id                                        Int
+  fk_metreur_id                                       Int?
+  partenaire_commercial_id                            Int?
+  date_metrage                                        DateTime?                 @db.Timestamp(6)
+  date_installation                                   DateTime?                 @db.Timestamp(6)
+  date_vente                                          DateTime                  @db.Timestamp(6)
+  montant                                             Decimal                   @db.Decimal(10, 2)
+  paiement_echeance                                   DateTime?                 @db.Date
+  commentaire                                         String?
+  paid                                                String?                   @db.VarChar(255)
+  deblocage                                           Int?                      @db.SmallInt
+  remise                                              Decimal                   @db.Decimal(5, 2)
+  bon_commande_filename                               String?                   @db.VarChar(255)
+  etude_technique_filename                            String?                   @db.VarChar(255)
+  old_id                                              Int?
+  restant_du                                          String?                   @db.VarChar(255)
+  financement                                         String?                   @db.VarChar(255)
+  financeur                                           String?                   @db.VarChar(255)
+  evaluation_conseiller                               Int?
+  evaluation_metreur                                  Int?
+  evaluation_installateur                             Int?
+  evaluation_prestation_general                       Int?
+  evaluation_commentaire                              String?                   @db.VarChar(255)
+  source_montant_com                                  Decimal?                  @db.Decimal(10, 2)
+  source_commentaire                                  String?                   @db.VarChar(255)
+  v2_agence                                           v2_agence                 @relation(fields: [fk_agence_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_client                                           v2_client                 @relation(fields: [fk_client_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_vente_etape                                      v2_vente_etape?           @relation(fields: [fk_etape_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_employee_v2_vente_fk_metreur_idTov2_employee     v2_employee?              @relation("v2_vente_fk_metreur_idTov2_employee", fields: [fk_metreur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_employee_v2_vente_fk_prospecteur_idTov2_employee v2_employee?              @relation("v2_vente_fk_prospecteur_idTov2_employee", fields: [fk_prospecteur_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_employee_v2_vente_fk_vendeur1_idTov2_employee    v2_employee?              @relation("v2_vente_fk_vendeur1_idTov2_employee", fields: [fk_vendeur1_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_employee_v2_vente_fk_vendeur2_idTov2_employee    v2_employee?              @relation("v2_vente_fk_vendeur2_idTov2_employee", fields: [fk_vendeur2_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_vente_state                                      v2_vente_state            @relation(fields: [fk_vente_state_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_vente_status                                     v2_vente_status?          @relation(fields: [fk_vente_status_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  v2_partenaire_commercial                            v2_partenaire_commercial? @relation(fields: [partenaire_commercial_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([fk_agence_id])
+  @@index([fk_client_id])
+  @@index([fk_etape_id])
+  @@index([fk_metreur_id])
+  @@index([fk_prospecteur_id])
+  @@index([fk_vendeur1_id])
+  @@index([fk_vendeur2_id])
+  @@index([fk_vente_state_id])
+  @@index([fk_vente_status_id])
+  @@index([partenaire_commercial_id])
+}
+
+model v2_vente_employee {
+  vente_id    Int
+  employee_id Int
+  v2_employee v2_employee @relation(fields: [employee_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([vente_id, employee_id])
+  @@index([employee_id])
+  @@index([vente_id])
+}
+
+model v2_vente_etape {
+  id       Int        @id @default(autoincrement())
+  nom      String     @db.VarChar(255)
+  v2_vente v2_vente[]
+}
+
+model v2_vente_pack_produit {
+  vente_id        Int
+  pack_produit_id Int
+
+  @@id([vente_id, pack_produit_id])
+  @@index([pack_produit_id])
+  @@index([vente_id])
+}
+
+model v2_vente_produit {
+  vente_id   Int
+  produit_id Int
+
+  @@id([vente_id, produit_id])
+  @@index([produit_id])
+  @@index([vente_id])
+}
+
+model v2_vente_state {
+  id       Int        @id @default(autoincrement())
+  nom      String     @db.VarChar(255)
+  date_add DateTime   @db.Timestamp(6)
+  v2_vente v2_vente[]
+}
+
+model v2_vente_status {
+  id       Int        @id @default(autoincrement())
+  nom      String     @db.VarChar(255)
+  date_add DateTime   @db.Timestamp(6)
+  v2_vente v2_vente[]
 }
